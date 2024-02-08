@@ -1,797 +1,92 @@
-{
-  "cells": [
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "L4Y28xIshBYs"
-      },
-      "source": [
-        "# Setup"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 5,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "APfJ_U0vx1rH",
-        "outputId": "b705a5b3-d1cb-4c71-e72a-6f0398500f6b"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Collecting einops\n",
-            "  Downloading einops-0.7.0-py3-none-any.whl (44 kB)\n",
-            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m44.6/44.6 kB\u001b[0m \u001b[31m1.8 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
-            "\u001b[?25hCollecting ninja\n",
-            "  Downloading ninja-1.11.1.1-py2.py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl (307 kB)\n",
-            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m307.2/307.2 kB\u001b[0m \u001b[31m12.4 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
-            "\u001b[?25hRequirement already satisfied: gdown in /usr/local/lib/python3.10/dist-packages (4.7.3)\n",
-            "Requirement already satisfied: filelock in /usr/local/lib/python3.10/dist-packages (from gdown) (3.13.1)\n",
-            "Requirement already satisfied: requests[socks] in /usr/local/lib/python3.10/dist-packages (from gdown) (2.31.0)\n",
-            "Requirement already satisfied: six in /usr/local/lib/python3.10/dist-packages (from gdown) (1.16.0)\n",
-            "Requirement already satisfied: tqdm in /usr/local/lib/python3.10/dist-packages (from gdown) (4.66.1)\n",
-            "Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.10/dist-packages (from gdown) (4.12.3)\n",
-            "Requirement already satisfied: soupsieve>1.2 in /usr/local/lib/python3.10/dist-packages (from beautifulsoup4->gdown) (2.5)\n",
-            "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.10/dist-packages (from requests[socks]->gdown) (3.3.2)\n",
-            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests[socks]->gdown) (3.6)\n",
-            "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.10/dist-packages (from requests[socks]->gdown) (2.0.7)\n",
-            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.10/dist-packages (from requests[socks]->gdown) (2023.11.17)\n",
-            "Requirement already satisfied: PySocks!=1.5.7,>=1.5.6 in /usr/local/lib/python3.10/dist-packages (from requests[socks]->gdown) (1.7.1)\n",
-            "Installing collected packages: ninja, einops\n",
-            "Successfully installed einops-0.7.0 ninja-1.11.1.1\n"
-          ]
-        }
-      ],
-      "source": [
-        "!pip install einops ninja gdown"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 1,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "WbCGexOebBGi",
-        "outputId": "e162d32b-8356-4070-fc05-de9af7c00eb3"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Mounted at /content/drive\n"
-          ]
-        }
-      ],
-      "source": [
-        "# Connect Google Drive\n",
-        "from google.colab import drive\n",
-        "drive.mount('/content/drive')"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 2,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "00S7pPSdhZ5g",
-        "outputId": "4a361e4f-5779-45bf-9042-18c3e7ac1a75"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "/content/drive/MyDrive/NEDJAI/stylegan3\n"
-          ]
-        }
-      ],
-      "source": [
-        "import os\n",
-        "if os.path.isdir('/content/drive/MyDrive/NEDJAI/stylegan3/'):\n",
-        "    %cd '/content/drive/MyDrive/NEDJAI/stylegan3/'\n",
-        "else:\n",
-        "    !git clone https://github.com/bvshyam/stylegan3.git /content/drive/MyDrive/NEDJAI/stylegan3/\n",
-        "    %cd '/content/drive/MyDrive/NEDJAI/stylegan3/'\n"
-      ]
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "5YPvBu7plAqg"
-      },
-      "source": [
-        "# Model training"
-      ]
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "Vb71nLldlDib"
-      },
-      "source": [
-        "You can start from a pre-trained model. Below are some of the models from Nvdia\n",
-        "\n",
-        "\n",
-        "\n",
-        "```\n",
-        "stylegan3-t-ffhq-1024x1024.pkl, stylegan3-t-ffhqu-1024x1024.pkl, stylegan3-t-ffhqu-256x256.pkl\n",
-        "stylegan3-r-ffhq-1024x1024.pkl, stylegan3-r-ffhqu-1024x1024.pkl, stylegan3-r-ffhqu-256x256.pkl\n",
-        "stylegan3-t-metfaces-1024x1024.pkl, stylegan3-t-metfacesu-1024x1024.pkl\n",
-        "stylegan3-r-metfaces-1024x1024.pkl, stylegan3-r-metfacesu-1024x1024.pkl\n",
-        "stylegan3-t-afhqv2-512x512.pkl\n",
-        "stylegan3-r-afhqv2-512x512.pkl\n",
-        "```\n",
-        "\n"
-      ]
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "bJ5NFiJpm-Mf"
-      },
-      "source": [
-        "## Finetuning a model"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 3,
-      "metadata": {
-        "id": "0z2DJq9InBUl"
-      },
-      "outputs": [],
-      "source": [
-        "batch_size = 16\n",
-        "batch_gpu_size = 8 # Batch size for GPU\n",
-        "\n",
-        "dataset_path = '/content/drive/MyDrive/NEV_png_256x256.zip'\n",
-        "resume_from = '/content/drive/MyDrive/NEDJAI/stylegan3/results/00012-stylegan3-t-NEV-gpus1-batch16-gamma50/network-snapshot-000032.pkl'  #Can be the link from nvidia\n",
-        "#resume_from ='/content/drive/MyDrive/NEDJAI/stylegan3/models/network-a657-r-512-148863.pkl'\n",
-        "\n",
-        "\n",
-        "gamma_value = 50.0 #Adjustable R1 regularization weight\n",
-        "snapshot_count = 8"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 6,
-      "metadata": {
-        "id": "msjpvR1Z0UM8",
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "outputId": "03f07aa2-e9f0-4f66-cf03-9c1a5ba2bd30"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "\n",
-            "Training options:\n",
-            "{\n",
-            "  \"G_kwargs\": {\n",
-            "    \"class_name\": \"training.networks_stylegan3.Generator\",\n",
-            "    \"z_dim\": 512,\n",
-            "    \"w_dim\": 512,\n",
-            "    \"mapping_kwargs\": {\n",
-            "      \"num_layers\": 2\n",
-            "    },\n",
-            "    \"channel_base\": 32768,\n",
-            "    \"channel_max\": 512,\n",
-            "    \"magnitude_ema_beta\": 0.9994456359721023\n",
-            "  },\n",
-            "  \"D_kwargs\": {\n",
-            "    \"class_name\": \"training.networks_stylegan2.Discriminator\",\n",
-            "    \"block_kwargs\": {\n",
-            "      \"freeze_layers\": 0\n",
-            "    },\n",
-            "    \"mapping_kwargs\": {},\n",
-            "    \"epilogue_kwargs\": {\n",
-            "      \"mbstd_group_size\": 4\n",
-            "    },\n",
-            "    \"channel_base\": 32768,\n",
-            "    \"channel_max\": 512\n",
-            "  },\n",
-            "  \"G_opt_kwargs\": {\n",
-            "    \"class_name\": \"torch.optim.Adam\",\n",
-            "    \"betas\": [\n",
-            "      0,\n",
-            "      0.99\n",
-            "    ],\n",
-            "    \"eps\": 1e-08,\n",
-            "    \"lr\": 0.0025\n",
-            "  },\n",
-            "  \"D_opt_kwargs\": {\n",
-            "    \"class_name\": \"torch.optim.Adam\",\n",
-            "    \"betas\": [\n",
-            "      0,\n",
-            "      0.99\n",
-            "    ],\n",
-            "    \"eps\": 1e-08,\n",
-            "    \"lr\": 0.002\n",
-            "  },\n",
-            "  \"loss_kwargs\": {\n",
-            "    \"class_name\": \"training.loss.StyleGAN2Loss\",\n",
-            "    \"r1_gamma\": 50.0\n",
-            "  },\n",
-            "  \"data_loader_kwargs\": {\n",
-            "    \"pin_memory\": true,\n",
-            "    \"prefetch_factor\": 2,\n",
-            "    \"num_workers\": 2\n",
-            "  },\n",
-            "  \"training_set_kwargs\": {\n",
-            "    \"class_name\": \"training.dataset.ImageFolderDataset\",\n",
-            "    \"path\": \"/content/drive/MyDrive/NEV_png_256x256.zip\",\n",
-            "    \"use_labels\": false,\n",
-            "    \"max_size\": 6705,\n",
-            "    \"xflip\": false,\n",
-            "    \"resolution\": 256,\n",
-            "    \"random_seed\": 0\n",
-            "  },\n",
-            "  \"num_gpus\": 1,\n",
-            "  \"batch_size\": 16,\n",
-            "  \"batch_gpu\": 8,\n",
-            "  \"metrics\": [\n",
-            "    \"pr50k3_full\"\n",
-            "  ],\n",
-            "  \"total_kimg\": 1000,\n",
-            "  \"kimg_per_tick\": 4,\n",
-            "  \"image_snapshot_ticks\": 8,\n",
-            "  \"network_snapshot_ticks\": 8,\n",
-            "  \"random_seed\": 0,\n",
-            "  \"ema_kimg\": 5.0,\n",
-            "  \"augment_kwargs\": {\n",
-            "    \"class_name\": \"training.augment.AugmentPipe\",\n",
-            "    \"xflip\": 1,\n",
-            "    \"rotate90\": 1,\n",
-            "    \"xint\": 1,\n",
-            "    \"scale\": 1,\n",
-            "    \"rotate\": 1,\n",
-            "    \"aniso\": 1,\n",
-            "    \"xfrac\": 1,\n",
-            "    \"brightness\": 1,\n",
-            "    \"contrast\": 1,\n",
-            "    \"lumaflip\": 1,\n",
-            "    \"hue\": 1,\n",
-            "    \"saturation\": 1\n",
-            "  },\n",
-            "  \"ada_target\": 0.6,\n",
-            "  \"run_dir\": \"/content/drive/MyDrive/NEDJAI/stylegan3/results/00016-stylegan3-t-NEV_png_256x256-gpus1-batch16-gamma50\"\n",
-            "}\n",
-            "\n",
-            "Output directory:    /content/drive/MyDrive/NEDJAI/stylegan3/results/00016-stylegan3-t-NEV_png_256x256-gpus1-batch16-gamma50\n",
-            "Number of GPUs:      1\n",
-            "Batch size:          16 images\n",
-            "Training duration:   1000 kimg\n",
-            "Dataset path:        /content/drive/MyDrive/NEV_png_256x256.zip\n",
-            "Dataset size:        6705 images\n",
-            "Dataset resolution:  256\n",
-            "Dataset labels:      False\n",
-            "Dataset x-flips:     False\n",
-            "\n",
-            "Creating output directory...\n",
-            "Launching processes...\n",
-            "Loading training set...\n",
-            "/usr/local/lib/python3.10/dist-packages/torch/utils/data/sampler.py:64: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.\n",
-            "  warnings.warn(\"`data_source` argument is not used and will be removed in 2.2.0.\"\n",
-            "\n",
-            "Num images:  6705\n",
-            "Image shape: [3, 256, 256]\n",
-            "Label shape: [0]\n",
-            "\n",
-            "Constructing networks...\n",
-            "Setting up PyTorch plugin \"bias_act_plugin\"... Done.\n",
-            "Setting up PyTorch plugin \"filtered_lrelu_plugin\"... Done.\n",
-            "\n",
-            "Generator                     Parameters  Buffers  Output shape        Datatype\n",
-            "---                           ---         ---      ---                 ---     \n",
-            "mapping.fc0                   262656      -        [8, 512]            float32 \n",
-            "mapping.fc1                   262656      -        [8, 512]            float32 \n",
-            "mapping                       -           512      [8, 16, 512]        float32 \n",
-            "synthesis.input.affine        2052        -        [8, 4]              float32 \n",
-            "synthesis.input               262144      1545     [8, 512, 36, 36]    float32 \n",
-            "synthesis.L0_36_512.affine    262656      -        [8, 512]            float32 \n",
-            "synthesis.L0_36_512           2359808     25       [8, 512, 36, 36]    float32 \n",
-            "synthesis.L1_36_512.affine    262656      -        [8, 512]            float32 \n",
-            "synthesis.L1_36_512           2359808     25       [8, 512, 36, 36]    float32 \n",
-            "synthesis.L2_36_512.affine    262656      -        [8, 512]            float32 \n",
-            "synthesis.L2_36_512           2359808     25       [8, 512, 36, 36]    float32 \n",
-            "synthesis.L3_52_512.affine    262656      -        [8, 512]            float32 \n",
-            "synthesis.L3_52_512           2359808     37       [8, 512, 52, 52]    float16 \n",
-            "synthesis.L4_52_512.affine    262656      -        [8, 512]            float32 \n",
-            "synthesis.L4_52_512           2359808     25       [8, 512, 52, 52]    float16 \n",
-            "synthesis.L5_84_512.affine    262656      -        [8, 512]            float32 \n",
-            "synthesis.L5_84_512           2359808     37       [8, 512, 84, 84]    float16 \n",
-            "synthesis.L6_84_512.affine    262656      -        [8, 512]            float32 \n",
-            "synthesis.L6_84_512           2359808     25       [8, 512, 84, 84]    float16 \n",
-            "synthesis.L7_148_512.affine   262656      -        [8, 512]            float32 \n",
-            "synthesis.L7_148_512          2359808     37       [8, 512, 148, 148]  float16 \n",
-            "synthesis.L8_148_512.affine   262656      -        [8, 512]            float32 \n",
-            "synthesis.L8_148_512          2359808     25       [8, 512, 148, 148]  float16 \n",
-            "synthesis.L9_148_362.affine   262656      -        [8, 512]            float32 \n",
-            "synthesis.L9_148_362          1668458     25       [8, 362, 148, 148]  float16 \n",
-            "synthesis.L10_276_256.affine  185706      -        [8, 362]            float32 \n",
-            "synthesis.L10_276_256         834304      37       [8, 256, 276, 276]  float16 \n",
-            "synthesis.L11_276_181.affine  131328      -        [8, 256]            float32 \n",
-            "synthesis.L11_276_181         417205      25       [8, 181, 276, 276]  float16 \n",
-            "synthesis.L12_276_128.affine  92853       -        [8, 181]            float32 \n",
-            "synthesis.L12_276_128         208640      25       [8, 128, 276, 276]  float16 \n",
-            "synthesis.L13_256_128.affine  65664       -        [8, 128]            float32 \n",
-            "synthesis.L13_256_128         147584      25       [8, 128, 256, 256]  float16 \n",
-            "synthesis.L14_256_3.affine    65664       -        [8, 128]            float32 \n",
-            "synthesis.L14_256_3           387         1        [8, 3, 256, 256]    float16 \n",
-            "synthesis                     -           -        [8, 3, 256, 256]    float32 \n",
-            "---                           ---         ---      ---                 ---     \n",
-            "Total                         28472133    2456     -                   -       \n",
-            "\n",
-            "Setting up PyTorch plugin \"upfirdn2d_plugin\"... Done.\n",
-            "\n",
-            "Discriminator  Parameters  Buffers  Output shape        Datatype\n",
-            "---            ---         ---      ---                 ---     \n",
-            "b256.fromrgb   512         16       [8, 128, 256, 256]  float16 \n",
-            "b256.skip      32768       16       [8, 256, 128, 128]  float16 \n",
-            "b256.conv0     147584      16       [8, 128, 256, 256]  float16 \n",
-            "b256.conv1     295168      16       [8, 256, 128, 128]  float16 \n",
-            "b256           -           16       [8, 256, 128, 128]  float16 \n",
-            "b128.skip      131072      16       [8, 512, 64, 64]    float16 \n",
-            "b128.conv0     590080      16       [8, 256, 128, 128]  float16 \n",
-            "b128.conv1     1180160     16       [8, 512, 64, 64]    float16 \n",
-            "b128           -           16       [8, 512, 64, 64]    float16 \n",
-            "b64.skip       262144      16       [8, 512, 32, 32]    float16 \n",
-            "b64.conv0      2359808     16       [8, 512, 64, 64]    float16 \n",
-            "b64.conv1      2359808     16       [8, 512, 32, 32]    float16 \n",
-            "b64            -           16       [8, 512, 32, 32]    float16 \n",
-            "b32.skip       262144      16       [8, 512, 16, 16]    float16 \n",
-            "b32.conv0      2359808     16       [8, 512, 32, 32]    float16 \n",
-            "b32.conv1      2359808     16       [8, 512, 16, 16]    float16 \n",
-            "b32            -           16       [8, 512, 16, 16]    float16 \n",
-            "b16.skip       262144      16       [8, 512, 8, 8]      float32 \n",
-            "b16.conv0      2359808     16       [8, 512, 16, 16]    float32 \n",
-            "b16.conv1      2359808     16       [8, 512, 8, 8]      float32 \n",
-            "b16            -           16       [8, 512, 8, 8]      float32 \n",
-            "b8.skip        262144      16       [8, 512, 4, 4]      float32 \n",
-            "b8.conv0       2359808     16       [8, 512, 8, 8]      float32 \n",
-            "b8.conv1       2359808     16       [8, 512, 4, 4]      float32 \n",
-            "b8             -           16       [8, 512, 4, 4]      float32 \n",
-            "b4.mbstd       -           -        [8, 513, 4, 4]      float32 \n",
-            "b4.conv        2364416     16       [8, 512, 4, 4]      float32 \n",
-            "b4.fc          4194816     -        [8, 512]            float32 \n",
-            "b4.out         513         -        [8, 1]              float32 \n",
-            "---            ---         ---      ---                 ---     \n",
-            "Total          28864129    416      -                   -       \n",
-            "\n",
-            "Setting up augmentation...\n",
-            "Distributing across 1 GPUs...\n",
-            "Setting up training phases...\n",
-            "Exporting sample images...\n",
-            "Initializing logs...\n",
-            "2024-02-05 20:28:58.520128: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered\n",
-            "2024-02-05 20:28:58.520181: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered\n",
-            "2024-02-05 20:28:58.521703: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered\n",
-            "2024-02-05 20:28:59.531384: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT\n",
-            "Training for 1000 kimg...\n",
-            "\n",
-            "tick 0     kimg 0.0      time 3m 18s       sec/tick 14.7    sec/kimg 916.92  maintenance 183.2  cpumem 2.78   gpumem 34.77  reserved 35.27  augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.0, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 603.311961889267, \"total_time_str\": \"10m 03s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000000.pkl\", \"timestamp\": 1707165572.2838311}\n",
-            "tick 1     kimg 4.0      time 16m 23s      sec/tick 168.3   sec/kimg 42.07   maintenance 617.2  cpumem 3.91   gpumem 6.53   reserved 9.37   augment 0.000\n",
-            "tick 2     kimg 8.0      time 19m 12s      sec/tick 168.2   sec/kimg 42.06   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 3     kimg 12.0     time 22m 00s      sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 4     kimg 16.0     time 24m 48s      sec/tick 168.4   sec/kimg 42.09   maintenance 0.0    cpumem 3.91   gpumem 6.24   reserved 7.91   augment 0.001\n",
-            "tick 5     kimg 20.0     time 27m 36s      sec/tick 168.5   sec/kimg 42.12   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 6     kimg 24.0     time 30m 25s      sec/tick 168.0   sec/kimg 42.01   maintenance 0.0    cpumem 3.91   gpumem 6.23   reserved 7.91   augment 0.001\n",
-            "tick 7     kimg 28.0     time 33m 13s      sec/tick 168.3   sec/kimg 42.08   maintenance 0.0    cpumem 3.91   gpumem 6.23   reserved 7.91   augment 0.000\n",
-            "tick 8     kimg 32.0     time 36m 01s      sec/tick 168.2   sec/kimg 42.05   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.0, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 465.4619565010071, \"total_time_str\": \"7m 45s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000032.pkl\", \"timestamp\": 1707167394.571558}\n",
-            "tick 9     kimg 36.0     time 46m 45s      sec/tick 167.8   sec/kimg 41.95   maintenance 476.3  cpumem 3.55   gpumem 6.23   reserved 7.91   augment 0.000\n",
-            "tick 10    kimg 40.0     time 49m 34s      sec/tick 168.5   sec/kimg 42.12   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 11    kimg 44.0     time 52m 22s      sec/tick 167.8   sec/kimg 41.96   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 12    kimg 48.0     time 55m 10s      sec/tick 168.3   sec/kimg 42.08   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 13    kimg 52.0     time 57m 58s      sec/tick 168.3   sec/kimg 42.07   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 14    kimg 56.0     time 1h 00m 46s   sec/tick 168.0   sec/kimg 41.99   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 15    kimg 60.0     time 1h 03m 35s   sec/tick 168.4   sec/kimg 42.10   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 16    kimg 64.0     time 1h 06m 23s   sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 9.999999747378752e-05, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 459.9355273246765, \"total_time_str\": \"7m 40s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000064.pkl\", \"timestamp\": 1707169214.6331575}\n",
-            "tick 17    kimg 68.0     time 1h 17m 05s   sec/tick 168.0   sec/kimg 42.00   maintenance 474.8  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 18    kimg 72.0     time 1h 19m 54s   sec/tick 168.4   sec/kimg 42.11   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 19    kimg 76.0     time 1h 22m 42s   sec/tick 168.3   sec/kimg 42.07   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 20    kimg 80.0     time 1h 25m 31s   sec/tick 168.6   sec/kimg 42.14   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 21    kimg 84.0     time 1h 28m 19s   sec/tick 168.5   sec/kimg 42.12   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 22    kimg 88.0     time 1h 31m 07s   sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 23    kimg 92.0     time 1h 33m 56s   sec/tick 168.3   sec/kimg 42.08   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 24    kimg 96.0     time 1h 36m 44s   sec/tick 168.2   sec/kimg 42.05   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.0, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 465.1900680065155, \"total_time_str\": \"7m 45s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000096.pkl\", \"timestamp\": 1707171040.589506}\n",
-            "tick 25    kimg 100.0    time 1h 47m 32s   sec/tick 168.3   sec/kimg 42.06   maintenance 479.6  cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 26    kimg 104.0    time 1h 50m 20s   sec/tick 168.3   sec/kimg 42.08   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 27    kimg 108.0    time 1h 53m 08s   sec/tick 168.2   sec/kimg 42.05   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 28    kimg 112.0    time 1h 55m 57s   sec/tick 168.7   sec/kimg 42.17   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 29    kimg 116.0    time 1h 58m 46s   sec/tick 168.6   sec/kimg 42.16   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 30    kimg 120.0    time 2h 01m 34s   sec/tick 168.2   sec/kimg 42.06   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 31    kimg 124.0    time 2h 04m 23s   sec/tick 169.5   sec/kimg 42.36   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 32    kimg 128.0    time 2h 07m 12s   sec/tick 169.0   sec/kimg 42.26   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.0, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 463.3885397911072, \"total_time_str\": \"7m 43s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000128.pkl\", \"timestamp\": 1707172859.6993096}\n",
-            "tick 33    kimg 132.0    time 2h 17m 51s   sec/tick 168.9   sec/kimg 42.21   maintenance 470.2  cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 34    kimg 136.0    time 2h 20m 41s   sec/tick 169.2   sec/kimg 42.30   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 35    kimg 140.0    time 2h 23m 29s   sec/tick 168.8   sec/kimg 42.21   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 36    kimg 144.0    time 2h 26m 19s   sec/tick 169.2   sec/kimg 42.29   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 37    kimg 148.0    time 2h 29m 08s   sec/tick 169.1   sec/kimg 42.28   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 38    kimg 152.0    time 2h 31m 56s   sec/tick 168.8   sec/kimg 42.20   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 39    kimg 156.0    time 2h 34m 45s   sec/tick 169.0   sec/kimg 42.25   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 40    kimg 160.0    time 2h 37m 35s   sec/tick 169.2   sec/kimg 42.31   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.12919999659061432, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 471.2140944004059, \"total_time_str\": \"7m 51s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000160.pkl\", \"timestamp\": 1707174700.4320092}\n",
-            "tick 41    kimg 164.0    time 2h 48m 35s   sec/tick 171.4   sec/kimg 42.86   maintenance 488.5  cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 42    kimg 168.0    time 2h 51m 27s   sec/tick 172.0   sec/kimg 42.99   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 43    kimg 172.0    time 2h 54m 18s   sec/tick 171.8   sec/kimg 42.94   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 44    kimg 176.0    time 2h 57m 11s   sec/tick 172.1   sec/kimg 43.02   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 45    kimg 180.0    time 3h 00m 03s   sec/tick 172.3   sec/kimg 43.08   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 46    kimg 184.0    time 3h 02m 54s   sec/tick 171.6   sec/kimg 42.91   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 47    kimg 188.0    time 3h 05m 47s   sec/tick 172.2   sec/kimg 43.05   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 48    kimg 192.0    time 3h 08m 38s   sec/tick 171.4   sec/kimg 42.84   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.0887800008058548, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 476.1429615020752, \"total_time_str\": \"7m 56s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000192.pkl\", \"timestamp\": 1707176571.0887609}\n",
-            "tick 49    kimg 196.0    time 3h 19m 46s   sec/tick 171.9   sec/kimg 42.98   maintenance 495.8  cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 50    kimg 200.0    time 3h 22m 38s   sec/tick 172.0   sec/kimg 43.00   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 51    kimg 204.0    time 3h 25m 30s   sec/tick 171.7   sec/kimg 42.93   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 52    kimg 208.0    time 3h 28m 22s   sec/tick 172.0   sec/kimg 42.99   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 53    kimg 212.0    time 3h 31m 14s   sec/tick 172.0   sec/kimg 43.01   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 54    kimg 216.0    time 3h 34m 05s   sec/tick 171.8   sec/kimg 42.95   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 55    kimg 220.0    time 3h 36m 56s   sec/tick 171.0   sec/kimg 42.75   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 56    kimg 224.0    time 3h 39m 48s   sec/tick 171.9   sec/kimg 42.97   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.01363999955356121, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 472.4388036727905, \"total_time_str\": \"7m 52s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000224.pkl\", \"timestamp\": 1707178432.1807437}\n",
-            "tick 57    kimg 228.0    time 3h 50m 46s   sec/tick 171.3   sec/kimg 42.82   maintenance 486.7  cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 58    kimg 232.0    time 3h 53m 38s   sec/tick 171.9   sec/kimg 42.98   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 59    kimg 236.0    time 3h 56m 30s   sec/tick 171.3   sec/kimg 42.83   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 60    kimg 240.0    time 3h 59m 21s   sec/tick 171.9   sec/kimg 42.98   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 61    kimg 244.0    time 4h 02m 13s   sec/tick 171.5   sec/kimg 42.87   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 62    kimg 248.0    time 4h 05m 04s   sec/tick 170.6   sec/kimg 42.66   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 63    kimg 252.0    time 4h 07m 55s   sec/tick 171.6   sec/kimg 42.90   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 64    kimg 256.0    time 4h 10m 47s   sec/tick 171.3   sec/kimg 42.83   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.16925999522209167, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 473.3951458930969, \"total_time_str\": \"7m 53s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000256.pkl\", \"timestamp\": 1707180293.0411975}\n",
-            "tick 65    kimg 260.0    time 4h 21m 47s   sec/tick 171.1   sec/kimg 42.77   maintenance 489.3  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 66    kimg 264.0    time 4h 24m 39s   sec/tick 171.6   sec/kimg 42.91   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 67    kimg 268.0    time 4h 27m 30s   sec/tick 171.3   sec/kimg 42.81   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 68    kimg 272.0    time 4h 30m 21s   sec/tick 171.3   sec/kimg 42.83   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 69    kimg 276.0    time 4h 33m 12s   sec/tick 170.5   sec/kimg 42.62   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 70    kimg 280.0    time 4h 36m 03s   sec/tick 171.5   sec/kimg 42.86   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 71    kimg 284.0    time 4h 38m 55s   sec/tick 171.7   sec/kimg 42.93   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 72    kimg 288.0    time 4h 41m 47s   sec/tick 171.7   sec/kimg 42.93   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.20735999941825867, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 474.83997797966003, \"total_time_str\": \"7m 55s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000288.pkl\", \"timestamp\": 1707182159.6055772}\n",
-            "tick 73    kimg 292.0    time 4h 52m 54s   sec/tick 171.4   sec/kimg 42.84   maintenance 495.8  cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 74    kimg 296.0    time 4h 55m 46s   sec/tick 171.8   sec/kimg 42.94   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 75    kimg 300.0    time 4h 58m 37s   sec/tick 171.3   sec/kimg 42.82   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 76    kimg 304.0    time 5h 01m 28s   sec/tick 170.8   sec/kimg 42.70   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 77    kimg 308.0    time 5h 04m 19s   sec/tick 171.5   sec/kimg 42.87   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 78    kimg 312.0    time 5h 07m 10s   sec/tick 171.2   sec/kimg 42.79   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 79    kimg 316.0    time 5h 10m 02s   sec/tick 171.8   sec/kimg 42.94   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 80    kimg 320.0    time 5h 12m 53s   sec/tick 171.2   sec/kimg 42.79   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.30643999576568604, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 472.49798130989075, \"total_time_str\": \"7m 52s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000320.pkl\", \"timestamp\": 1707184022.160817}\n",
-            "tick 81    kimg 324.0    time 5h 23m 56s   sec/tick 171.4   sec/kimg 42.85   maintenance 491.7  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 82    kimg 328.0    time 5h 26m 47s   sec/tick 171.0   sec/kimg 42.76   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 83    kimg 332.0    time 5h 29m 38s   sec/tick 170.9   sec/kimg 42.73   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 84    kimg 336.0    time 5h 32m 27s   sec/tick 168.6   sec/kimg 42.15   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 85    kimg 340.0    time 5h 35m 16s   sec/tick 168.7   sec/kimg 42.17   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 86    kimg 344.0    time 5h 38m 04s   sec/tick 168.6   sec/kimg 42.15   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 87    kimg 348.0    time 5h 40m 53s   sec/tick 169.0   sec/kimg 42.24   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 88    kimg 352.0    time 5h 43m 42s   sec/tick 169.0   sec/kimg 42.25   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.2939999997615814, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 459.14384174346924, \"total_time_str\": \"7m 39s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000352.pkl\", \"timestamp\": 1707185857.490786}\n",
-            "tick 89    kimg 356.0    time 5h 54m 29s   sec/tick 168.3   sec/kimg 42.06   maintenance 478.0  cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 90    kimg 360.0    time 5h 57m 17s   sec/tick 168.5   sec/kimg 42.12   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 91    kimg 364.0    time 6h 00m 05s   sec/tick 167.9   sec/kimg 41.98   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 92    kimg 368.0    time 6h 02m 53s   sec/tick 168.2   sec/kimg 42.04   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 93    kimg 372.0    time 6h 05m 41s   sec/tick 168.3   sec/kimg 42.08   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 94    kimg 376.0    time 6h 08m 29s   sec/tick 167.9   sec/kimg 41.98   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 95    kimg 380.0    time 6h 11m 18s   sec/tick 168.6   sec/kimg 42.15   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 96    kimg 384.0    time 6h 14m 07s   sec/tick 168.8   sec/kimg 42.20   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.40139999985694885, \"pr50k3_full_recall\": 0.00014914243365637958}, \"metric\": \"pr50k3_full\", \"total_time\": 457.9326767921448, \"total_time_str\": \"7m 38s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000384.pkl\", \"timestamp\": 1707187681.5187733}\n",
-            "tick 97    kimg 388.0    time 6h 24m 54s   sec/tick 170.1   sec/kimg 42.53   maintenance 477.5  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 98    kimg 392.0    time 6h 27m 43s   sec/tick 168.6   sec/kimg 42.15   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 99    kimg 396.0    time 6h 30m 31s   sec/tick 167.9   sec/kimg 41.98   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 100   kimg 400.0    time 6h 33m 19s   sec/tick 168.2   sec/kimg 42.05   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 101   kimg 404.0    time 6h 36m 07s   sec/tick 168.2   sec/kimg 42.04   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 102   kimg 408.0    time 6h 38m 55s   sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 103   kimg 412.0    time 6h 41m 44s   sec/tick 168.3   sec/kimg 42.06   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 104   kimg 416.0    time 6h 44m 32s   sec/tick 168.1   sec/kimg 42.03   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.341839998960495, \"pr50k3_full_recall\": 0.00029828486731275916}, \"metric\": \"pr50k3_full\", \"total_time\": 460.50334072113037, \"total_time_str\": \"7m 41s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000416.pkl\", \"timestamp\": 1707189510.7370899}\n",
-            "tick 105   kimg 420.0    time 6h 55m 21s   sec/tick 167.9   sec/kimg 41.98   maintenance 481.7  cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 106   kimg 424.0    time 6h 58m 10s   sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 107   kimg 428.0    time 7h 00m 57s   sec/tick 167.8   sec/kimg 41.96   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 108   kimg 432.0    time 7h 03m 45s   sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 109   kimg 436.0    time 7h 06m 34s   sec/tick 168.3   sec/kimg 42.07   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 110   kimg 440.0    time 7h 09m 22s   sec/tick 167.8   sec/kimg 41.96   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 111   kimg 444.0    time 7h 12m 10s   sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 112   kimg 448.0    time 7h 14m 58s   sec/tick 167.9   sec/kimg 41.98   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.38999998569488525, \"pr50k3_full_recall\": 0.0007457121391780674}, \"metric\": \"pr50k3_full\", \"total_time\": 463.54838609695435, \"total_time_str\": \"7m 44s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000448.pkl\", \"timestamp\": 1707191339.1408255}\n",
-            "tick 113   kimg 452.0    time 7h 25m 50s   sec/tick 167.7   sec/kimg 41.91   maintenance 484.4  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 114   kimg 456.0    time 7h 28m 37s   sec/tick 167.9   sec/kimg 41.97   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 115   kimg 460.0    time 7h 31m 25s   sec/tick 167.6   sec/kimg 41.90   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 116   kimg 464.0    time 7h 34m 13s   sec/tick 167.9   sec/kimg 41.98   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 117   kimg 468.0    time 7h 37m 01s   sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 118   kimg 472.0    time 7h 39m 49s   sec/tick 167.9   sec/kimg 41.97   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 119   kimg 476.0    time 7h 42m 37s   sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 120   kimg 480.0    time 7h 45m 26s   sec/tick 168.6   sec/kimg 42.15   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.393559992313385, \"pr50k3_full_recall\": 0.00014914243365637958}, \"metric\": \"pr50k3_full\", \"total_time\": 462.050048828125, \"total_time_str\": \"7m 42s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000480.pkl\", \"timestamp\": 1707193165.5105433}\n",
-            "tick 121   kimg 484.0    time 7h 56m 16s   sec/tick 167.7   sec/kimg 41.92   maintenance 482.7  cpumem 3.68   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 122   kimg 488.0    time 7h 59m 04s   sec/tick 167.9   sec/kimg 41.98   maintenance 0.0    cpumem 3.68   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 123   kimg 492.0    time 8h 01m 52s   sec/tick 167.7   sec/kimg 41.92   maintenance 0.0    cpumem 3.68   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 124   kimg 496.0    time 8h 04m 39s   sec/tick 167.8   sec/kimg 41.96   maintenance 0.0    cpumem 3.68   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 125   kimg 500.0    time 8h 07m 27s   sec/tick 168.0   sec/kimg 41.99   maintenance 0.0    cpumem 3.68   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 126   kimg 504.0    time 8h 10m 15s   sec/tick 167.7   sec/kimg 41.92   maintenance 0.0    cpumem 3.68   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 127   kimg 508.0    time 8h 13m 03s   sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.68   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 128   kimg 512.0    time 8h 15m 51s   sec/tick 168.0   sec/kimg 41.99   maintenance 0.0    cpumem 3.68   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.34007999300956726, \"pr50k3_full_recall\": 0.0007457121391780674}, \"metric\": \"pr50k3_full\", \"total_time\": 466.03049993515015, \"total_time_str\": \"7m 46s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000512.pkl\", \"timestamp\": 1707194995.142616}\n",
-            "tick 129   kimg 516.0    time 8h 26m 46s   sec/tick 167.9   sec/kimg 41.97   maintenance 486.8  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 130   kimg 520.0    time 8h 29m 34s   sec/tick 168.2   sec/kimg 42.05   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 131   kimg 524.0    time 8h 32m 22s   sec/tick 167.8   sec/kimg 41.94   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 132   kimg 528.0    time 8h 35m 10s   sec/tick 168.3   sec/kimg 42.08   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 133   kimg 532.0    time 8h 37m 58s   sec/tick 168.3   sec/kimg 42.07   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 134   kimg 536.0    time 8h 40m 46s   sec/tick 167.8   sec/kimg 41.96   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 135   kimg 540.0    time 8h 43m 34s   sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 136   kimg 544.0    time 8h 46m 22s   sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.31700000166893005, \"pr50k3_full_recall\": 0.00014914243365637958}, \"metric\": \"pr50k3_full\", \"total_time\": 465.4137842655182, \"total_time_str\": \"7m 45s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000544.pkl\", \"timestamp\": 1707196826.2237122}\n",
-            "tick 137   kimg 548.0    time 8h 57m 16s   sec/tick 167.4   sec/kimg 41.85   maintenance 486.8  cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 138   kimg 552.0    time 9h 00m 04s   sec/tick 167.7   sec/kimg 41.94   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 139   kimg 556.0    time 9h 02m 52s   sec/tick 167.6   sec/kimg 41.91   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 140   kimg 560.0    time 9h 05m 40s   sec/tick 167.8   sec/kimg 41.94   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 141   kimg 564.0    time 9h 08m 27s   sec/tick 167.7   sec/kimg 41.93   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 142   kimg 568.0    time 9h 11m 15s   sec/tick 167.4   sec/kimg 41.85   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 143   kimg 572.0    time 9h 14m 03s   sec/tick 167.8   sec/kimg 41.95   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 144   kimg 576.0    time 9h 16m 51s   sec/tick 168.3   sec/kimg 42.07   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.34139999747276306, \"pr50k3_full_recall\": 0.00044742730096913874}, \"metric\": \"pr50k3_full\", \"total_time\": 465.69879627227783, \"total_time_str\": \"7m 46s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000576.pkl\", \"timestamp\": 1707198654.6823952}\n",
-            "tick 145   kimg 580.0    time 9h 27m 45s   sec/tick 167.8   sec/kimg 41.95   maintenance 486.6  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 146   kimg 584.0    time 9h 30m 33s   sec/tick 168.2   sec/kimg 42.04   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 147   kimg 588.0    time 9h 33m 21s   sec/tick 167.9   sec/kimg 41.98   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 148   kimg 592.0    time 9h 36m 10s   sec/tick 168.3   sec/kimg 42.07   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 149   kimg 596.0    time 9h 38m 58s   sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 150   kimg 600.0    time 9h 41m 46s   sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 151   kimg 604.0    time 9h 44m 34s   sec/tick 168.1   sec/kimg 42.03   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 152   kimg 608.0    time 9h 47m 22s   sec/tick 168.0   sec/kimg 41.99   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.30300000309944153, \"pr50k3_full_recall\": 0.0}, \"metric\": \"pr50k3_full\", \"total_time\": 456.75141072273254, \"total_time_str\": \"7m 37s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000608.pkl\", \"timestamp\": 1707200476.011883}\n",
-            "tick 153   kimg 612.0    time 9h 58m 06s   sec/tick 167.7   sec/kimg 41.92   maintenance 477.0  cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 154   kimg 616.0    time 10h 00m 55s  sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 155   kimg 620.0    time 10h 03m 43s  sec/tick 168.0   sec/kimg 41.99   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 156   kimg 624.0    time 10h 06m 31s  sec/tick 168.2   sec/kimg 42.06   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 157   kimg 628.0    time 10h 09m 19s  sec/tick 168.6   sec/kimg 42.14   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 158   kimg 632.0    time 10h 12m 07s  sec/tick 168.1   sec/kimg 42.01   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 159   kimg 636.0    time 10h 14m 56s  sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 160   kimg 640.0    time 10h 17m 44s  sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.22130000591278076, \"pr50k3_full_recall\": 0.0019388515502214432}, \"metric\": \"pr50k3_full\", \"total_time\": 462.61259293556213, \"total_time_str\": \"7m 43s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000640.pkl\", \"timestamp\": 1707202304.924892}\n",
-            "tick 161   kimg 644.0    time 10h 28m 35s  sec/tick 167.8   sec/kimg 41.95   maintenance 484.2  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 162   kimg 648.0    time 10h 31m 24s  sec/tick 168.2   sec/kimg 42.06   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 163   kimg 652.0    time 10h 34m 12s  sec/tick 168.0   sec/kimg 41.99   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 164   kimg 656.0    time 10h 37m 00s  sec/tick 168.2   sec/kimg 42.06   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 165   kimg 660.0    time 10h 39m 48s  sec/tick 168.1   sec/kimg 42.03   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 166   kimg 664.0    time 10h 42m 36s  sec/tick 167.8   sec/kimg 41.95   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 167   kimg 668.0    time 10h 45m 24s  sec/tick 168.2   sec/kimg 42.04   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 168   kimg 672.0    time 10h 48m 12s  sec/tick 167.9   sec/kimg 41.99   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.29137998819351196, \"pr50k3_full_recall\": 0.0005965697346255183}, \"metric\": \"pr50k3_full\", \"total_time\": 462.4253535270691, \"total_time_str\": \"7m 42s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000672.pkl\", \"timestamp\": 1707204134.1119502}\n",
-            "tick 169   kimg 676.0    time 10h 59m 05s  sec/tick 167.8   sec/kimg 41.95   maintenance 484.8  cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 170   kimg 680.0    time 11h 01m 53s  sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 171   kimg 684.0    time 11h 04m 40s  sec/tick 167.7   sec/kimg 41.91   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 172   kimg 688.0    time 11h 07m 29s  sec/tick 168.0   sec/kimg 42.01   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 173   kimg 692.0    time 11h 10m 17s  sec/tick 168.0   sec/kimg 42.00   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 174   kimg 696.0    time 11h 13m 04s  sec/tick 167.8   sec/kimg 41.95   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 175   kimg 700.0    time 11h 15m 52s  sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 176   kimg 704.0    time 11h 18m 41s  sec/tick 168.1   sec/kimg 42.03   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.3852199912071228, \"pr50k3_full_recall\": 0.001789709203876555}, \"metric\": \"pr50k3_full\", \"total_time\": 462.6564438343048, \"total_time_str\": \"7m 43s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000704.pkl\", \"timestamp\": 1707205962.8202512}\n",
-            "tick 177   kimg 708.0    time 11h 29m 33s  sec/tick 167.8   sec/kimg 41.95   maintenance 485.0  cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 178   kimg 712.0    time 11h 32m 22s  sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 179   kimg 716.0    time 11h 35m 09s  sec/tick 168.0   sec/kimg 41.99   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 180   kimg 720.0    time 11h 37m 58s  sec/tick 168.3   sec/kimg 42.06   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 181   kimg 724.0    time 11h 40m 46s  sec/tick 168.4   sec/kimg 42.09   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 182   kimg 728.0    time 11h 43m 34s  sec/tick 168.2   sec/kimg 42.06   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 183   kimg 732.0    time 11h 46m 23s  sec/tick 168.3   sec/kimg 42.07   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 184   kimg 736.0    time 11h 49m 11s  sec/tick 168.4   sec/kimg 42.10   maintenance 0.0    cpumem 3.97   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.35019999742507935, \"pr50k3_full_recall\": 0.0046234154142439365}, \"metric\": \"pr50k3_full\", \"total_time\": 458.39923667907715, \"total_time_str\": \"7m 38s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000736.pkl\", \"timestamp\": 1707207789.5391538}\n",
-            "tick 185   kimg 740.0    time 12h 00m 01s  sec/tick 168.2   sec/kimg 42.05   maintenance 481.2  cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 186   kimg 744.0    time 12h 02m 49s  sec/tick 168.4   sec/kimg 42.11   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 187   kimg 748.0    time 12h 05m 37s  sec/tick 167.9   sec/kimg 41.97   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 188   kimg 752.0    time 12h 08m 26s  sec/tick 169.1   sec/kimg 42.27   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 189   kimg 756.0    time 12h 11m 14s  sec/tick 168.5   sec/kimg 42.12   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 190   kimg 760.0    time 12h 14m 02s  sec/tick 168.0   sec/kimg 41.99   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 191   kimg 764.0    time 12h 16m 51s  sec/tick 168.4   sec/kimg 42.09   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 192   kimg 768.0    time 12h 19m 39s  sec/tick 168.3   sec/kimg 42.09   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.5099800229072571, \"pr50k3_full_recall\": 0.0026845638640224934}, \"metric\": \"pr50k3_full\", \"total_time\": 463.8837676048279, \"total_time_str\": \"7m 44s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000768.pkl\", \"timestamp\": 1707209622.472439}\n",
-            "tick 193   kimg 772.0    time 12h 30m 33s  sec/tick 168.2   sec/kimg 42.06   maintenance 486.1  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 194   kimg 776.0    time 12h 33m 22s  sec/tick 168.8   sec/kimg 42.21   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 195   kimg 780.0    time 12h 36m 11s  sec/tick 168.4   sec/kimg 42.11   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 196   kimg 784.0    time 12h 39m 00s  sec/tick 169.0   sec/kimg 42.26   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 197   kimg 788.0    time 12h 41m 49s  sec/tick 168.9   sec/kimg 42.21   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 198   kimg 792.0    time 12h 44m 37s  sec/tick 168.4   sec/kimg 42.11   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 199   kimg 796.0    time 12h 47m 26s  sec/tick 168.7   sec/kimg 42.19   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 200   kimg 800.0    time 12h 50m 14s  sec/tick 168.5   sec/kimg 42.13   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.47571998834609985, \"pr50k3_full_recall\": 0.008053691126406193}, \"metric\": \"pr50k3_full\", \"total_time\": 467.64506578445435, \"total_time_str\": \"7m 48s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000800.pkl\", \"timestamp\": 1707211462.4480853}\n",
-            "tick 201   kimg 804.0    time 13h 01m 14s  sec/tick 168.5   sec/kimg 42.11   maintenance 490.8  cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 202   kimg 808.0    time 13h 04m 02s  sec/tick 168.5   sec/kimg 42.14   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 203   kimg 812.0    time 13h 06m 51s  sec/tick 168.5   sec/kimg 42.12   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 204   kimg 816.0    time 13h 09m 40s  sec/tick 169.1   sec/kimg 42.27   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 205   kimg 820.0    time 13h 12m 29s  sec/tick 169.4   sec/kimg 42.36   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 206   kimg 824.0    time 13h 15m 19s  sec/tick 169.2   sec/kimg 42.30   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 207   kimg 828.0    time 13h 18m 08s  sec/tick 169.5   sec/kimg 42.37   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 208   kimg 832.0    time 13h 20m 57s  sec/tick 168.9   sec/kimg 42.21   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.48471999168395996, \"pr50k3_full_recall\": 0.009097687900066376}, \"metric\": \"pr50k3_full\", \"total_time\": 458.92857241630554, \"total_time_str\": \"7m 39s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000832.pkl\", \"timestamp\": 1707213295.8696713}\n",
-            "tick 209   kimg 836.0    time 13h 31m 47s  sec/tick 168.1   sec/kimg 42.04   maintenance 481.8  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 210   kimg 840.0    time 13h 34m 35s  sec/tick 168.4   sec/kimg 42.09   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 211   kimg 844.0    time 13h 37m 23s  sec/tick 168.1   sec/kimg 42.02   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 212   kimg 848.0    time 13h 40m 12s  sec/tick 168.9   sec/kimg 42.22   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 213   kimg 852.0    time 13h 43m 02s  sec/tick 169.4   sec/kimg 42.36   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 214   kimg 856.0    time 13h 45m 51s  sec/tick 169.1   sec/kimg 42.28   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 215   kimg 860.0    time 13h 48m 40s  sec/tick 169.5   sec/kimg 42.38   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 216   kimg 864.0    time 13h 51m 30s  sec/tick 169.6   sec/kimg 42.40   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.44547998905181885, \"pr50k3_full_recall\": 0.009843400679528713}, \"metric\": \"pr50k3_full\", \"total_time\": 459.43987560272217, \"total_time_str\": \"7m 39s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000864.pkl\", \"timestamp\": 1707215129.449393}\n",
-            "tick 217   kimg 868.0    time 14h 02m 21s  sec/tick 168.3   sec/kimg 42.08   maintenance 482.3  cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 218   kimg 872.0    time 14h 05m 09s  sec/tick 168.7   sec/kimg 42.17   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 219   kimg 876.0    time 14h 07m 58s  sec/tick 168.4   sec/kimg 42.10   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 220   kimg 880.0    time 14h 10m 46s  sec/tick 168.7   sec/kimg 42.18   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 221   kimg 884.0    time 14h 13m 35s  sec/tick 168.5   sec/kimg 42.13   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 222   kimg 888.0    time 14h 16m 24s  sec/tick 168.8   sec/kimg 42.21   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 223   kimg 892.0    time 14h 19m 12s  sec/tick 168.6   sec/kimg 42.16   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 224   kimg 896.0    time 14h 22m 01s  sec/tick 168.5   sec/kimg 42.12   maintenance 0.0    cpumem 4.00   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.5156000256538391, \"pr50k3_full_recall\": 0.013273675926029682}, \"metric\": \"pr50k3_full\", \"total_time\": 467.0904333591461, \"total_time_str\": \"7m 47s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000896.pkl\", \"timestamp\": 1707216967.7695749}\n",
-            "tick 225   kimg 900.0    time 14h 32m 59s  sec/tick 168.8   sec/kimg 42.21   maintenance 489.6  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 226   kimg 904.0    time 14h 35m 48s  sec/tick 169.0   sec/kimg 42.24   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 227   kimg 908.0    time 14h 38m 37s  sec/tick 168.4   sec/kimg 42.11   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 228   kimg 912.0    time 14h 41m 26s  sec/tick 169.3   sec/kimg 42.32   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 229   kimg 916.0    time 14h 44m 15s  sec/tick 168.8   sec/kimg 42.19   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 230   kimg 920.0    time 14h 47m 04s  sec/tick 169.2   sec/kimg 42.31   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 231   kimg 924.0    time 14h 49m 53s  sec/tick 169.3   sec/kimg 42.33   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 232   kimg 928.0    time 14h 52m 43s  sec/tick 169.5   sec/kimg 42.37   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.5235199928283691, \"pr50k3_full_recall\": 0.009843400679528713}, \"metric\": \"pr50k3_full\", \"total_time\": 465.06224370002747, \"total_time_str\": \"7m 45s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000928.pkl\", \"timestamp\": 1707218808.1662488}\n",
-            "tick 233   kimg 932.0    time 15h 03m 40s  sec/tick 168.9   sec/kimg 42.23   maintenance 488.0  cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 234   kimg 936.0    time 15h 06m 29s  sec/tick 169.4   sec/kimg 42.34   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 235   kimg 940.0    time 15h 09m 18s  sec/tick 169.2   sec/kimg 42.29   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 236   kimg 944.0    time 15h 12m 08s  sec/tick 169.2   sec/kimg 42.30   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 237   kimg 948.0    time 15h 14m 57s  sec/tick 169.3   sec/kimg 42.32   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 238   kimg 952.0    time 15h 17m 46s  sec/tick 169.3   sec/kimg 42.32   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 239   kimg 956.0    time 15h 20m 36s  sec/tick 169.5   sec/kimg 42.37   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 240   kimg 960.0    time 15h 23m 25s  sec/tick 169.6   sec/kimg 42.41   maintenance 0.0    cpumem 3.87   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.5298799872398376, \"pr50k3_full_recall\": 0.01819537580013275}, \"metric\": \"pr50k3_full\", \"total_time\": 469.83211731910706, \"total_time_str\": \"7m 50s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000960.pkl\", \"timestamp\": 1707220655.1980286}\n",
-            "tick 241   kimg 964.0    time 15h 34m 27s  sec/tick 168.7   sec/kimg 42.18   maintenance 492.6  cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 242   kimg 968.0    time 15h 37m 16s  sec/tick 169.4   sec/kimg 42.34   maintenance 0.0    cpumem 3.91   gpumem 6.23   reserved 7.91   augment 0.000\n",
-            "tick 243   kimg 972.0    time 15h 40m 05s  sec/tick 169.2   sec/kimg 42.30   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 244   kimg 976.0    time 15h 42m 55s  sec/tick 169.5   sec/kimg 42.38   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 245   kimg 980.0    time 15h 45m 44s  sec/tick 169.5   sec/kimg 42.37   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 246   kimg 984.0    time 15h 48m 33s  sec/tick 169.0   sec/kimg 42.24   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 247   kimg 988.0    time 15h 51m 23s  sec/tick 169.7   sec/kimg 42.42   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 248   kimg 992.0    time 15h 54m 12s  sec/tick 169.5   sec/kimg 42.37   maintenance 0.0    cpumem 3.91   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.5354800224304199, \"pr50k3_full_recall\": 0.01491424348205328}, \"metric\": \"pr50k3_full\", \"total_time\": 464.17190504074097, \"total_time_str\": \"7m 44s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-000992.pkl\", \"timestamp\": 1707222496.718559}\n",
-            "tick 249   kimg 996.0    time 16h 05m 09s  sec/tick 169.4   sec/kimg 42.34   maintenance 487.1  cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "tick 250   kimg 1000.0   time 16h 07m 57s  sec/tick 168.0   sec/kimg 42.16   maintenance 0.0    cpumem 3.55   gpumem 6.22   reserved 7.91   augment 0.000\n",
-            "Evaluating metrics...\n",
-            "{\"results\": {\"pr50k3_full_precision\": 0.5312399864196777, \"pr50k3_full_recall\": 0.02043251320719719}, \"metric\": \"pr50k3_full\", \"total_time\": 462.9574592113495, \"total_time_str\": \"7m 43s\", \"num_gpus\": 1, \"snapshot_pkl\": \"network-snapshot-001000.pkl\", \"timestamp\": 1707223320.017406}\n",
-            "\n",
-            "Exiting...\n"
-          ]
-        }
-      ],
-      "source": [
-        "\n",
-        "# Fine-tune StyleGAN3-R for MetFaces-U using 1 GPU, starting from the pre-trained FFHQ-U pickle.\n",
-        "!python /content/drive/MyDrive/NEDJAI/stylegan3/train.py --outdir=/content/drive/MyDrive/NEDJAI/stylegan3/results --cfg=stylegan3-t \\\n",
-        "--data=$dataset_path --gpus=1 --batch=$batch_size --batch-gpu=$batch_gpu_size --gamma=$gamma_value --kimg=1000 \\\n",
-        "--snap=$snapshot_count --workers=2  --metrics='pr50k3_full'\n",
-        "\n"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {
-        "id": "vtYpyFAu0URw"
-      },
-      "outputs": [],
-      "source": [
-        "#Visualization - does not work on colab\n",
-        "#!python /content/drive/MyDrive/NEDJAI/stylegan3/visualizer.py"
-      ]
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "tYw4XWfXhgWk"
-      },
-      "source": [
-        "# Generate images"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 7,
-      "metadata": {
-        "id": "VrSWGWIjykbE"
-      },
-      "outputs": [],
-      "source": [
-        "model_path = '/content/drive/MyDrive/NEDJAI/stylegan3/results/00016-stylegan3-t-NEV_png_256x256-gpus1-batch16-gamma50/network-snapshot-001000.pkl'"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 8,
-      "metadata": {
-        "id": "lYsuiuwIykhn",
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "outputId": "2057092c-06f0-4637-801c-5f616e9a2df1"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Loading networks from \"/content/drive/MyDrive/NEDJAI/stylegan3/results/00016-stylegan3-t-NEV_png_256x256-gpus1-batch16-gamma50/network-snapshot-001000.pkl\"...\n",
-            "Generating image for seed 40 (0/1) ...\n",
-            "Setting up PyTorch plugin \"bias_act_plugin\"... Done.\n",
-            "Setting up PyTorch plugin \"filtered_lrelu_plugin\"... Done.\n"
-          ]
-        }
-      ],
-      "source": [
-        "#Random generation of images using model created\n",
-        "\n",
-        "!python /content/drive/MyDrive/NEDJAI/stylegan3/gen_images.py --outdir=out --trunc=1 --seeds=40 \\\n",
-        "    --network=$model_path"
-      ]
-    }
-  ],
-  "metadata": {
-    "accelerator": "GPU",
-    "colab": {
-      "machine_shape": "hm",
-      "provenance": [],
-      "gpuType": "A100",
-      "toc_visible": true
-    },
-    "kernelspec": {
-      "display_name": "Python 3",
-      "name": "python3"
-    },
-    "language_info": {
-      "name": "python"
-    }
-  },
-  "nbformat": 4,
-  "nbformat_minor": 0
-}
+import os
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt  # Optional, for displaying images
+
+def preprocess_image(image_path, target_size=(380, 380)):
+    # Load the image
+    original_image = cv2.imread(image_path)
+
+    # Resize the original image to the target size
+    resized_original = cv2.resize(original_image, target_size)
+
+    # Convert the resized image to grayscale
+    gray_scale = cv2.cvtColor(resized_original, cv2.COLOR_BGR2GRAY)
+
+    # Kernel for the morphological filtering
+    kernel = cv2.getStructuringElement(1, (17, 17))
+
+    # Perform the blackHat filtering on the grayscale image to find the hair contours
+    blackhat = cv2.morphologyEx(gray_scale, cv2.MORPH_BLACKHAT, kernel)
+
+    # Intensify the hair contours in preparation for inpainting
+    ret, threshold = cv2.threshold(blackhat, 10, 255, cv2.THRESH_BINARY)
+
+    # Inpaint the resized original image depending on the mask
+    inpainted_image = cv2.inpaint(resized_original, threshold, 1, cv2.INPAINT_TELEA)
+
+    # Convert the inpainted image back to BGR color space
+    resized_image_bgr = inpainted_image  # No need for cv2.cvtColor here
+
+    return resized_original, resized_image_bgr
+
+def color_constancy(img, power=6, gamma=2.2):
+    """
+    Parameters
+    ----------
+    img: 3D numpy array
+        The original image with format of (h, w, c)
+    power: int
+        The degree of norm, 6 is used in the reference paper
+    gamma: float
+        The value of gamma correction, 2.2 is used in the reference paper
+    """
+    img_dtype = img.dtype
+
+    if gamma is not None:
+        img = img.astype('uint8')
+        look_up_table = np.ones((256, 1), dtype='uint8') * 0
+        for i in range(256):
+            look_up_table[i][0] = 255 * pow(i/255, 1/gamma)
+        img = cv2.LUT(img, look_up_table)
+
+    img = img.astype('float32')
+    img_power = np.power(img, power)
+    rgb_vec = np.power(np.mean(img_power, (0, 1)), 1/power)
+    rgb_norm = np.sqrt(np.sum(np.power(rgb_vec, 2.0)))
+    rgb_vec = rgb_vec/rgb_norm
+    rgb_vec = 1/(rgb_vec*np.sqrt(3))
+    img = np.multiply(img, rgb_vec)
+
+    return img.astype(img_dtype)
+
+# Directory path
+directory_path = "C:/Users/aacer/PycharmProjects/TP1/PFEM2IMOVI/Dataset/NEV"
+
+# Get the list of files in the directory
+files = os.listdir(directory_path)
+
+# Select the first 12 image files (you can modify this based on your needs)
+selected_files = files[:12]
+
+# Create a 4x3 subplot grid
+fig, axes = plt.subplots(4, 3, figsize=(12, 16))
+
+# Iterate over the selected files
+for i, file_name in enumerate(selected_files):
+    # Preprocess the image
+    image_path = os.path.join(directory_path, file_name)
+    original_img, preprocessed_img = preprocess_image(image_path)
+
+    # Apply color constancy
+    result_img = color_constancy(preprocessed_img)
+
+    # Display the original, preprocessed, and result images in the subplot
+    axes[i // 3, i % 3].imshow(np.hstack([cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB),
+                                          cv2.cvtColor(preprocessed_img, cv2.COLOR_BGR2RGB),
+                                          cv2.cvtColor(result_img.astype('uint8'), cv2.COLOR_BGR2RGB)]))
+    axes[i // 3, i % 3].set_title(f'Image {i + 1}')
+
+# Adjust layout for better visualization
+plt.tight_layout()
+plt.show()
