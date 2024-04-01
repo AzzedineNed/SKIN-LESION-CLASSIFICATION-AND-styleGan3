@@ -21,15 +21,15 @@ To replicate the experiments and evaluate the classification models:
 3. Train ResNet50 and EfficientNetB4 models on the preprocessed dataset.
 4. Evaluate the models' performance using appropriate metrics such as accuracy, precision, recall, and F1-score.
 
-### Results
+# Results
 
 ## Metrics
 <img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/results/metrics.PNG" >
 
-# ResNet50: Confusion Matrix + ROC-Curve
+### ResNet50: Confusion Matrix + ROC-Curve
 <img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/results/resnetRoc.png" >
 
-# EfficientNetB04: Confusion Matrix + ROC-Curve
+### EfficientNetB04: Confusion Matrix + ROC-Curve
 <img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/results/rocmc_effnet.jpg" >
 
 ## Part 2: Skin Lesion Synthesis
@@ -49,7 +49,7 @@ To generate synthetic Nevus skin lesion images:
 3. Train a StyleGAN3 model on the preprocessed dataset to generate synthetic images.
 4. Fine-tune the model as necessary to improve the quality and diversity of generated images.
 
-### Results
+# Results
 
 - **StyleGAN3**: Generated synthetic Nevus skin lesion images with high fidelity and diversity. Qualitative evaluation showed that the generated images exhibit realistic lesion characteristics.
 ## Reals
