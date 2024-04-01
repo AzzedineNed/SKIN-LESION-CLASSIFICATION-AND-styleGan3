@@ -23,8 +23,14 @@ To replicate the experiments and evaluate the classification models:
 
 ### Results
 
-- **ResNet50**: Achieved an accuracy of X%, precision of Y%, recall of Z%, and F1-score of W%.
-- **EfficientNetB4**: Achieved an accuracy of X%, precision of Y%, recall of Z%, and F1-score of W%.
+## Metrics
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/results/metrics.PNG" >
+
+# ResNet50: Confusion Matrix + ROC-Curve
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/results/resnetRoc.png" >
+
+# EfficientNetB04: Confusion Matrix + ROC-Curve
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/results/rocmc_effnet.jpg" >
 
 ## Part 2: Skin Lesion Synthesis
 
@@ -46,11 +52,16 @@ To generate synthetic Nevus skin lesion images:
 ### Results
 
 - **StyleGAN3**: Generated synthetic Nevus skin lesion images with high fidelity and diversity. Qualitative evaluation showed that the generated images exhibit realistic lesion characteristics.
+## Reals
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/results/reals.jpg">
 
-## Contributing
+## Fakes
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/results/fakes001000.jpg" >
 
-Contributions to this project are welcome! If you have any suggestions, improvements, or bug fixes, please feel free to submit a pull request.
+## Single fake images
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/out/out/seed0060.png" >
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/out/out/seed0090.png" >
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/out/out/seed00120.png" >
 
-## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
