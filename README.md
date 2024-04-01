@@ -61,7 +61,7 @@ To generate synthetic Nevus skin lesion images:
 ## Single fake images
 <img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/out/out/seed0060.png" >
 <img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/out/out/seed0090.png" >
-<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/out/out/seed00120.png" >
+<img src="https://github.com/AzzedineNed/SKIN-LESION-CLASSIFICATION-AND-styleGan3/blob/main/out/out/seed0120.png" >
 
 
 
